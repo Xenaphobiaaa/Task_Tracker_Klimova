@@ -70,6 +70,7 @@ catch (ArgumentException ex)
         foreach (var t in tasks)
         {
             Console.WriteLine($"{t.Id}. {t.Title} [{t.Status}]");
+            Console.WriteLine("Подсказка: пункт 3 — изменить статус, пункт 4 — удалить.");
         }
         continue;
     }
