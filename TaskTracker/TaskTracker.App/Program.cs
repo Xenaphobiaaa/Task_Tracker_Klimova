@@ -1,7 +1,9 @@
-﻿using TaskTracker.Core.Models;
+﻿using TaskTracker.Core.Services;
 
-var tasks = new List<TaskItem>();
-var nextId = 1;
+using TaskTracker.Core.Models;
+
+var service = new TaskService();
+
 
 while (true)
 {
@@ -34,22 +36,22 @@ while (true)
             continue;
         }
 
-        var task = new TaskItem
-        {
-            Id = nextId,
-            Title = title.Trim(),
-            Status = TaskTracker.Core.Models.TaskStatus.New
-        };
+        try
+{
+    var task = service.Add(title);
+    Console.WriteLine($"Задача добавлена: #{task.Id} {task.Title} [{task.Status}]");
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine("Ошибка: " + ex.Message);
+}
 
-        nextId++;
-
-        tasks.Add(task);
-        Console.WriteLine($"Задача добавлена: #{task.Id} {task.Title} [{task.Status}]");
-        continue;
     }
 
     if (input == "2")
     {
+        var tasks = service.GetAll();
+
         if (tasks.Count == 0)
         {
             Console.WriteLine("Список задач пуст.");
