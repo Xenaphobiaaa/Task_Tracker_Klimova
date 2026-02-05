@@ -1,5 +1,5 @@
 ﻿using TaskTracker.Core.Services;
-
+using TaskTracker.Storage.Services;
 using TaskTracker.Core.Models;
 
 var service = new TaskService();
@@ -9,6 +9,21 @@ static bool TryReadInt(string prompt, out int value)
     var text = Console.ReadLine();
     return int.TryParse(text, out value);
 }
+
+// Путь к файлу данных рядом с приложением (в папке запуска)
+var dataFilePath = Path.Combine(AppContext.BaseDirectory, "data", "tasks.json");
+
+// Хранилище JSON
+var storage = new JsonTaskStorage(dataFilePath);
+
+// Загружаем задачи из файла
+var loadedTasks = storage.Load();
+
+// Создаём сервис с уже загруженными задачами
+var _ = new TaskService(loadedTasks);
+
+Console.WriteLine($"Данные: {dataFilePath}");
+Console.WriteLine($"Загружено задач: {loadedTasks.Count}");
 
 
 while (true)
@@ -47,9 +62,11 @@ while (true)
         try
 {
     var task = service.Add(title);
-    Console.WriteLine($"Задача добавлена: #{task.Id} {task.Title} [{task.Status}]");
-}
-catch (ArgumentException ex)
+            storage.Save(service.GetAll());
+            Console.WriteLine($"Задача добавлена: #{task.Id} {task.Title} [{task.Status}]");
+ 
+        }
+        catch (ArgumentException ex)
 {
     Console.WriteLine("Ошибка: " + ex.Message);
 }
@@ -116,7 +133,10 @@ catch (ArgumentException ex)
         try
         {
             var updated = service.ChangeStatus(id, newStatus);
+            storage.Save(service.GetAll());
             Console.WriteLine($"Статус изменён: #{updated.Id} {updated.Title} [{updated.Status}]");
+         
+
         }
         catch (ArgumentException ex)
         {
@@ -156,7 +176,10 @@ catch (ArgumentException ex)
         try
         {
             service.Delete(id);
+            storage.Save(service.GetAll());
             Console.WriteLine($"Задача с Id={id} удалена.");
+          
+
         }
         catch (ArgumentException ex)
         {
